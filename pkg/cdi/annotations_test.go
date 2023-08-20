@@ -339,10 +339,8 @@ func TestUpdateAnnotations(t *testing.T) {
 				annotations, err = UpdateAnnotations(annotations, i.plugin, i.devID, i.devices)
 				if !tc.invalid {
 					require.NoError(t, err, "CDI device injection annotation")
-				} else {
-					if err != nil {
-						break
-					}
+				} else if err != nil {
+					break
 				}
 			}
 			if tc.invalid {

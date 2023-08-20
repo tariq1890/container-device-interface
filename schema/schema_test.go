@@ -247,7 +247,7 @@ func scanAndValidate(t *testing.T, scm *schema.Schema, dir string, isValid bool,
 			if name := info.Name(); filepath.Ext(name) != ".json" || name == "empty.json" {
 				return nil
 			}
-			//fmt.Printf("*** processing %s...\n", path)
+			// fmt.Printf("*** processing %s...\n", path)
 			validateFn(t, scm, path, !unloadable[filepath.Base(path)], isValid)
 		}
 
@@ -287,8 +287,12 @@ func readAndValidate(t *testing.T, scm *schema.Schema, path string, shouldLoad, 
 	)
 
 	f, err := os.Open(path)
-	defer f.Close()
 	require.NoError(t, err)
+
+	defer func() {
+		err := f.Close()
+		require.NoError(t, err)
+	}()
 
 	if scm != nil {
 		data, err = scm.ReadAndValidate(f)
@@ -309,8 +313,11 @@ func readAndValidate(t *testing.T, scm *schema.Schema, path string, shouldLoad, 
 
 func validateRead(t *testing.T, scm *schema.Schema, path string, shouldLoad, isValid bool) {
 	f, err := os.Open(path)
-	defer f.Close()
 	require.NoError(t, err)
+	defer func() {
+		err := f.Close()
+		require.NoError(t, err)
+	}()
 
 	buf := &bytes.Buffer{}
 	r := io.TeeReader(f, buf)
@@ -323,10 +330,11 @@ func validateRead(t *testing.T, scm *schema.Schema, path string, shouldLoad, isV
 
 	verifyResult(t, scm, err, shouldLoad, isValid)
 
+	br := bytes.NewReader(buf.Bytes())
 	if scm != nil {
-		err = scm.Validate(bytes.NewReader(buf.Bytes()))
+		err = scm.Validate(br)
 	} else {
-		err = schema.Validate(bytes.NewReader(buf.Bytes()))
+		err = schema.Validate(br)
 	}
 
 	verifyResult(t, scm, err, shouldLoad, isValid)

@@ -22,16 +22,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
+	schema "github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
 	"github.com/container-orchestrated-devices/container-device-interface/internal/multierror"
 	"github.com/container-orchestrated-devices/container-device-interface/internal/validation"
-	schema "github.com/xeipuuv/gojsonschema"
 )
 
 const (
@@ -86,7 +86,7 @@ func BuiltinSchema() *Schema {
 	return builtin
 }
 
-// NopSchema returns an validating JSON Schema that does no real validation.
+// NopSchema returns a validating JSON Schema that does no real validation.
 func NopSchema() *Schema {
 	return &Schema{}
 }
@@ -135,7 +135,7 @@ func Load(source string) (*Schema, error) {
 	case strings.HasPrefix(source, "http://"):
 	case strings.HasPrefix(source, "https://"):
 	default:
-		if strings.Index(source, "://") < 0 {
+		if !strings.Contains(source, "://") {
 			source, err = filepath.Abs(source)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get JSON schema absolute path for %s: %w",
@@ -158,7 +158,7 @@ func Load(source string) (*Schema, error) {
 // ReadAndValidate all data from the given reader, using the schema for validation.
 func (s *Schema) ReadAndValidate(r io.Reader) ([]byte, error) {
 	loader, reader := schema.NewReaderLoader(r)
-	data, err := ioutil.ReadAll(reader)
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read data for validation: %w", err)
 	}
@@ -202,7 +202,7 @@ func (s *Schema) ValidateFile(path string) error {
 		return s.validate(schema.NewReferenceLoader("file://" + path))
 	}
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

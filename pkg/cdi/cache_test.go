@@ -27,11 +27,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
-	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/yaml"
+
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
+	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 )
 
 func TestNewCache(t *testing.T) {
@@ -177,6 +178,7 @@ devices:
 				}
 			} else {
 				dir, err = mkTestDir(t, nil)
+				require.NoError(t, err)
 			}
 
 			cache, err = NewCache(WithSpecDirs(
@@ -554,6 +556,7 @@ devices:
 							opts = append(opts, WithAutoRefresh(false))
 						}
 						cache, err = NewCache(opts...)
+						require.NoError(t, err)
 						require.NotNil(t, cache)
 					} else {
 						err = updateSpecDirs(t, dir, update.etc, update.run)
@@ -718,7 +721,7 @@ devices:
 					}
 
 					select {
-					case _ = <-stopCh:
+					case <-stopCh:
 						return
 					default:
 					}
@@ -748,7 +751,7 @@ devices:
 					}
 
 					select {
-					case _ = <-stopCh:
+					case <-stopCh:
 						return
 					default:
 					}
@@ -771,10 +774,10 @@ devices:
 				// from updater()'s create+write+rename loop)
 				for {
 					select {
-					case _ = <-stopCh:
+					case <-stopCh:
 						go osSync()
 						return
-					case _ = <-sync.C:
+					case <-sync.C:
 						go osSync()
 						sync.Reset(2 * time.Second)
 					}
@@ -803,7 +806,7 @@ devices:
 				select {
 				case err = <-errCh:
 					require.NotNil(t, err)
-				case _ = <-done:
+				case <-done:
 					close(stopCh)
 					wg.Wait()
 					return
@@ -1685,7 +1688,7 @@ devices:
 				"-0",
 			},
 			expected: [][]string{
-				[]string{
+				{
 					"vendor.com/device=dev1",
 				},
 				nil,
@@ -1746,25 +1749,25 @@ devices:
 				"-2",
 			},
 			expected: [][]string{
-				[]string{
+				{
 					"vendor.com/device=dev1",
 				},
-				[]string{
-					"vendor.com/device=dev1",
-					"vendor.com/device=dev2",
-				},
-				[]string{
+				{
 					"vendor.com/device=dev1",
 					"vendor.com/device=dev2",
-					"vendor.com/device=dev3",
-					"vendor.com/device=dev4",
 				},
-				[]string{
+				{
+					"vendor.com/device=dev1",
 					"vendor.com/device=dev2",
 					"vendor.com/device=dev3",
 					"vendor.com/device=dev4",
 				},
-				[]string{
+				{
+					"vendor.com/device=dev2",
+					"vendor.com/device=dev3",
+					"vendor.com/device=dev4",
+				},
+				{
 					"vendor.com/device=dev3",
 					"vendor.com/device=dev4",
 				},
@@ -1811,7 +1814,7 @@ devices:
 				)
 
 				if data[0] == '-' {
-					delIdx, err = strconv.Atoi(string(data[1:]))
+					delIdx, err = strconv.Atoi(data[1:])
 					require.NoError(t, err)
 
 					err = cache.RemoveSpec(specs[delIdx])

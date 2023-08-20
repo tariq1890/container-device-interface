@@ -42,11 +42,9 @@ func (d *DeviceNode) fillMissingInfo() error {
 
 	if d.Type == "" {
 		d.Type = string(hostDev.Type)
-	} else {
-		if d.Type != string(hostDev.Type) {
-			return fmt.Errorf("CDI device (%q, %q), host type mismatch (%s, %s)",
-				d.Path, d.HostPath, d.Type, string(hostDev.Type))
-		}
+	} else if d.Type != string(hostDev.Type) {
+		return fmt.Errorf("CDI device (%q, %q), host type mismatch (%s, %s)",
+			d.Path, d.HostPath, d.Type, string(hostDev.Type))
 	}
 	if d.Major == 0 && d.Type != "p" {
 		d.Major = hostDev.Major

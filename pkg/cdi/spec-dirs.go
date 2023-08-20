@@ -34,7 +34,7 @@ var (
 	// DefaultSpecDirs is the default Spec directory configuration.
 	// While altering this variable changes the package defaults,
 	// the preferred way of overriding the default directories is
-	// to use a WithSpecDirs options. Otherwise the change is only
+	// to use a WithSpecDirs options. Otherwise, the change is only
 	// effective if it takes place before creating the Registry or
 	// other Cache instances.
 	DefaultSpecDirs = []string{DefaultStaticDir, DefaultDynamicDir}
@@ -105,7 +105,7 @@ func scanSpecDirs(dirs []string, scanFn scanSpecFunc) error {
 			return scanFn(path, priority, spec, err)
 		})
 
-		if err != nil && err != ErrStopScan {
+		if err != nil && !errors.Is(err, ErrStopScan) {
 			return err
 		}
 	}

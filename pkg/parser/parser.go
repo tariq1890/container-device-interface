@@ -150,7 +150,7 @@ func validateVendorOrClassName(name string) error {
 	if !IsLetter(rune(name[0])) {
 		return fmt.Errorf("%q, should start with letter", name)
 	}
-	for _, c := range string(name[1 : len(name)-1]) {
+	for _, c := range name[1 : len(name)-1] {
 		switch {
 		case IsAlphaNumeric(c):
 		case c == '_' || c == '-' || c == '.':
@@ -181,7 +181,7 @@ func ValidateDeviceName(name string) error {
 	if len(name) == 1 {
 		return nil
 	}
-	for _, c := range string(name[1 : len(name)-1]) {
+	for _, c := range name[1 : len(name)-1] {
 		switch {
 		case IsAlphaNumeric(c):
 		case c == '_' || c == '-' || c == '.' || c == ':':

@@ -24,9 +24,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/container-orchestrated-devices/container-device-interface/specs-go"
 	oci "github.com/opencontainers/runtime-spec/specs-go"
 	ocigen "github.com/opencontainers/runtime-tools/generate"
+
+	"github.com/container-orchestrated-devices/container-device-interface/specs-go"
 )
 
 const (
@@ -90,14 +91,17 @@ func (e *ContainerEdits) Apply(spec *oci.Spec) error {
 			return err
 		}
 		dev := d.ToOCI()
-		if dev.UID == nil && spec.Process != nil {
-			if uid := spec.Process.User.UID; uid > 0 {
-				dev.UID = &uid
+
+		if spec.Process != nil {
+			if dev.UID == nil {
+				if uid := spec.Process.User.UID; uid > 0 {
+					dev.UID = &uid
+				}
 			}
-		}
-		if dev.GID == nil && spec.Process != nil {
-			if gid := spec.Process.User.GID; gid > 0 {
-				dev.GID = &gid
+			if dev.GID == nil {
+				if gid := spec.Process.User.GID; gid > 0 {
+					dev.GID = &gid
+				}
 			}
 		}
 

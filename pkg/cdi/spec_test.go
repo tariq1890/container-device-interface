@@ -24,13 +24,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/yaml"
 
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi/validate"
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/parser"
 	"github.com/container-orchestrated-devices/container-device-interface/schema"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
-	"github.com/stretchr/testify/require"
 )
 
 func TestReadSpec(t *testing.T) {

@@ -19,10 +19,11 @@ package cdi
 import (
 	"fmt"
 
+	oci "github.com/opencontainers/runtime-spec/specs-go"
+
 	"github.com/container-orchestrated-devices/container-device-interface/internal/validation"
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/parser"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
-	oci "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // Device represents a CDI device of a Spec.
@@ -67,7 +68,7 @@ func (d *Device) edits() *ContainerEdits {
 
 // Validate the device.
 func (d *Device) validate() error {
-	if err := ValidateDeviceName(d.Name); err != nil {
+	if err := parser.ValidateDeviceName(d.Name); err != nil {
 		return err
 	}
 	name := d.Name

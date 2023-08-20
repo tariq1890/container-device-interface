@@ -1,0 +1,24 @@
+run:
+  deadline: 10m
+linters:
+  disable-all: true
+  enable:
+    - gocritic
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - unconvert
+linters-settings:
+  gocritic:
+    disabled-checks:
+      - ifElseChain
+  goimports:
+    local-prefixes: github.com/container-orchestrated-devices/container-device-interface
+  gosec:
+    excludes:
+      - G306

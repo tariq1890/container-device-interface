@@ -19,7 +19,6 @@ package cdi
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,6 +28,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/container-orchestrated-devices/container-device-interface/internal/validation"
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/parser"
 	cdi "github.com/container-orchestrated-devices/container-device-interface/specs-go"
 )
 
@@ -62,7 +62,7 @@ type Spec struct {
 // assigned the given priority. If reading or parsing the Spec
 // data fails ReadSpec returns a nil Spec and an error.
 func ReadSpec(path string, priority int) (*Spec, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	switch {
 	case os.IsNotExist(err):
 		return nil, err
@@ -215,10 +215,10 @@ func (s *Spec) validate() (map[string]*Device, error) {
 		return nil, fmt.Errorf("the spec version must be at least v%v", minVersion)
 	}
 
-	if err := ValidateVendorName(s.vendor); err != nil {
+	if err := parser.ValidateVendorName(s.vendor); err != nil {
 		return nil, err
 	}
-	if err := ValidateClassName(s.class); err != nil {
+	if err := parser.ValidateClassName(s.class); err != nil {
 		return nil, err
 	}
 	if err := validation.ValidateSpecAnnotations(s.Kind, s.Annotations); err != nil {
@@ -271,7 +271,7 @@ func SetSpecValidator(fn func(*cdi.Spec) error) {
 	specValidator = fn
 }
 
-// validateSpec validates the Spec using the extneral validator.
+// validateSpec validates the Spec using the external validator.
 func validateSpec(raw *cdi.Spec) error {
 	validatorLock.RLock()
 	defer validatorLock.RUnlock()
@@ -296,7 +296,7 @@ func validateSpec(raw *cdi.Spec) error {
 // encoding. Otherwise WriteSpec() will use its default encoding.
 //
 // This function always returns the same name for the same vendor/class
-// combination. Therefore it cannot be used as such to generate multiple
+// combination. Therefore, it cannot be used as such to generate multiple
 // Spec file names for a single vendor and class.
 func GenerateSpecName(vendor, class string) string {
 	return vendor + "-" + class
@@ -325,11 +325,11 @@ func GenerateTransientSpecName(vendor, class, transientID string) string {
 
 // GenerateNameForSpec generates a name for the given Spec using
 // GenerateSpecName with the vendor and class taken from the Spec.
-// On success it returns the generated name and a nil error. If
+// On success, it returns the generated name and a nil error. If
 // the Spec does not contain a valid vendor or class, it returns
 // an empty name and a non-nil error.
 func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
-	vendor, class := ParseQualifier(raw.Kind)
+	vendor, class := parser.ParseQualifier(raw.Kind)
 	if vendor == "" {
 		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
 	}
@@ -339,11 +339,11 @@ func GenerateNameForSpec(raw *cdi.Spec) (string, error) {
 
 // GenerateNameForTransientSpec generates a name for the given transient
 // Spec using GenerateTransientSpecName with the vendor and class taken
-// from the Spec. On success it returns the generated name and a nil error.
+// from the Spec. On success, it returns the generated name and a nil error.
 // If the Spec does not contain a valid vendor or class, it returns an
-// an empty name and a non-nil error.
+// empty name and a non-nil error.
 func GenerateNameForTransientSpec(raw *cdi.Spec, transientID string) (string, error) {
-	vendor, class := ParseQualifier(raw.Kind)
+	vendor, class := parser.ParseQualifier(raw.Kind)
 	if vendor == "" {
 		return "", fmt.Errorf("invalid vendor/class %q in Spec", raw.Kind)
 	}

@@ -29,8 +29,7 @@ func ValidateSpecAnnotations(name string, any interface{}) error {
 		return nil
 	}
 
-	switch v := any.(type) {
-	case map[string]interface{}:
+	if v, ok := any.(map[string]interface{}); ok {
 		annotations := make(map[string]string)
 		for k, v := range v {
 			if s, ok := v.(string); ok {

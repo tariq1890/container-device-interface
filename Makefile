@@ -13,9 +13,8 @@ GO_CMD   := go
 GO_BUILD := $(GO_CMD) build
 GO_TEST  := $(GO_CMD) test -race -v -cover
 
-GO_LINT  := golint -set_exit_status
-GO_FMT   := gofmt
-GO_VET   := $(GO_CMD) vet
+GOLANGCI_LINT := golangci-lint run ./...
+GO_FMT        := gofmt
 
 CDI_PKG  := $(shell grep ^module go.mod | sed 's/^module *//g')
 
@@ -49,7 +48,7 @@ fmt format:
 	$(Q)$(GO_FMT) -s -d -w -e .
 
 lint:
-	$(Q)$(GO_LINT) -set_exit_status ./...
+	$(Q)$(GOLANGCI_LINT) ./...
 vet:
 	$(Q)$(GO_VET) ./...
 

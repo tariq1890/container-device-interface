@@ -18,7 +18,6 @@ package cdi
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -202,6 +201,7 @@ devices:
 				return nil
 			})
 
+			require.NoError(t, err)
 			require.Equal(t, tc.success, success)
 			require.Equal(t, tc.failure, failure)
 			require.Equal(t, tc.vendors, vendors)
@@ -212,13 +212,16 @@ devices:
 
 // Create an automatically cleaned up temporary directory, with optional content.
 func mkTestDir(t *testing.T, dirs map[string]map[string]string) (string, error) {
-	tmp, err := ioutil.TempDir("", ".cache-test*")
+	tmp, err := os.MkdirTemp("", ".cache-test*")
 	if err != nil {
 		return "", fmt.Errorf("failed to create test directory: %w", err)
 	}
 
 	t.Cleanup(func() {
-		os.RemoveAll(tmp)
+		cerr := os.RemoveAll(tmp)
+		if err == nil {
+			err = cerr
+		}
 	})
 
 	if err = updateTestDir(t, tmp, dirs); err != nil {
@@ -237,7 +240,7 @@ func updateTestDir(t *testing.T, tmp string, dirs map[string]map[string]string) 
 		for file, data := range content {
 			file := filepath.Join(dir, file)
 			tmp := file + ".tmp"
-			if err := ioutil.WriteFile(tmp, []byte(data), 0644); err != nil {
+			if err := os.WriteFile(tmp, []byte(data), 0644); err != nil {
 				return fmt.Errorf("failed to write file %q: %w", tmp, err)
 			}
 			if err := os.Rename(tmp, file); err != nil {
